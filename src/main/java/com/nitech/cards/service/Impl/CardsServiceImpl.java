@@ -1,8 +1,11 @@
 package com.nitech.cards.service.Impl;
 
 import com.nitech.cards.constants.CardsConstants;
+import com.nitech.cards.dto.CardsDto;
 import com.nitech.cards.entity.Cards;
 import com.nitech.cards.exception.CardAlreadyExistsException;
+import com.nitech.cards.exception.ResourceNotFoundExcetion;
+import com.nitech.cards.mapper.CardsMapper;
 import com.nitech.cards.repository.CardsRepository;
 import com.nitech.cards.service.ICardsService;
 import org.springframework.stereotype.Service;
@@ -79,4 +82,39 @@ public class CardsServiceImpl implements ICardsService {
 
         return newCards;
     }
+
+    /**
+     * @param mobileNumber - Input mobile Number
+     * @return Card Details based on a given mobileNumber
+     */
+    @Override
+    public CardsDto fetchCards(String mobileNumber) {
+        Cards cards = cardsRepository.findByMobileNumber(mobileNumber).orElseThrow(()->new ResourceNotFoundExcetion("Cards","CardNmber", mobileNumber));
+        return CardsMapper.mapToCardsDto(cards, new CardsDto());
+    }
+
+    /**
+     * @param cardsDto - CardsDto Object
+     * @return boolean indicating if the update of card details is successful or not
+     */
+    @Override
+    public boolean updateCard(CardsDto cardsDto){
+        Cards cards=cardsRepository.findByCardNumber(cardsDto.getCardNumber()).orElseThrow(()->new ResourceNotFoundExcetion("Cards","CardsNumber", cardsDto.getCardNumber() ));
+        CardsMapper.mapToCards(cardsDto,cards);
+        cardsRepository.save(cards);
+        return true;
+    }
+
+
+    /**
+     * @param mobileNumber - Input MobileNumber
+     * @return boolean indicating if the delete of card details is successful or not
+     */
+    public boolean deleteCard(String mobileNumber){
+        Cards cards=cardsRepository.findByMobileNumber(mobileNumber).orElseThrow(
+                ()->new ResourceNotFoundExcetion("Card", "mobileNumber", mobileNumber));
+                cardsRepository.deleteById(cards.getCardId());
+                return true;
+    }
+
 }
